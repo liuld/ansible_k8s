@@ -1,3 +1,6 @@
+- name: disabled selinux
+  selinux:
+    state: disabled
 - name: download docker bin file
   get_url:
     url: "{{docker_download_url}}"
