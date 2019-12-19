@@ -1,0 +1,8 @@
+- name: install docker
+  hosts: 192.168.10.60
+  vars:
+    docker_version: docker-19.03.1
+    docker_download_url: http://192.168.10.20/docker-19.03.1.tgz
+    ansible_root_dir: /root/ansible_k8s
+  roles:
+    - docker

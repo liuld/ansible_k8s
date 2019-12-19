@@ -1,0 +1,55 @@
+- name: download docker bin file
+  get_url:
+    url: "{{docker_download_url}}"
+    dest: /tmp/{{docker_version}}.tgz
+- name: unarchive docker bin file
+  unarchive:
+    copy: no
+    src: "/tmp/{{docker_version}}.tgz"
+    dest: /usr/local/bin/
+- name: cp docker service
+  template:
+    src: "{{ansible_root_dir}}/roles/docker/templates/docker.service.j2"
+    dest: /etc/systemd/system/docker.service
+    owner: root
+    group: root
+    mode: 0644
+- name: create docker dir
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+- name: cp root cert
+  copy:
+    src: "{{ansible_root_dir}}/certs/ca.pem"
+    dest: /etc/docker/ca.pem
+    owner: root
+    group: root
+    mode: 0644
+- name: cp docker cert key
+  copy:
+    src: "{{ansible_root_dir}}/certs/docker-key.pem"
+    dest: /etc/docker/docker-key.pem
+    owner: root
+    group: root
+    mode: 0644
+- name: cp docker cert
+  copy:
+    src: "{{ansible_root_dir}}/certs/docker.pem"
+    dest: /etc/docker/docker.pem
+    owner: root
+    group: root
+    mode: 0644
+- name: systemctl daemon reload
+  command: systemctl daemon-reload
+- name: docker runc protect
+  command: chattr +i /usr/local/bin/runc
+- name: start docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+- name: get docker status
+  command: systemctl status docker
+  register: docker_status
+  failed_when: docker_status.stdout.find("(running)") == -1
